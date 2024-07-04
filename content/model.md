@@ -60,6 +60,7 @@ Consider a scenario where you want to hash a user's password before saving it to
    $user->save();
 
 # 3. Appending Custom Attributes
+
   you can append custom attributes to the model's array form using the $appends property. This allows you to include additional computed or derived data alongside the actual database columns when serializing the model instance.
 
   Let's say you have a User model with separate first_name and last_name attributes, and you want to retrieve the user's full name as a single attribute.
@@ -76,5 +77,25 @@ Consider a scenario where you want to hash a user's password before saving it to
 
     $user = User::find(1);
     echo $user->full_name; // Outputs the full name of the user
+
+    
+# 4. Attribute Serialization
+
+ Attribute serialization allows you to control which attributes are included when converting a model instance to an array or JSON format. This is useful for hiding sensitive information or reducing the size of JSON responses.
+ 
+Let's say you have a User model with sensitive attributes like password and remember_token, which you don't want to expose in JSON response
+
+     class User extends Model
+    {
+    protected $hidden = ['password', 'remember_token'];
+    }
+
+   Attribute serialization offers several benefits:
+   
+   Security: You can protect sensitive data, such as passwords or tokens, from being unintentionally exposed in JSON responses.
+   
+   Performance: By reducing the size of JSON responses, you can improve the efficiency of data transmission between your application and clients.
+   
+   Control: You have fine-grained control over what data is exposed externally, ensuring compliance with security and privacy requirements.
        
      
