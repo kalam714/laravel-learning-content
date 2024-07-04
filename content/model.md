@@ -105,13 +105,13 @@ Let's say you have a User model with sensitive attributes like password and reme
 
      class User extends Model
     {
-   protected $casts = [
-           'is_admin' => 'boolean',
-           'age' => 'integer',
-           'salary' => 'float',
-           'settings' => 'array',
-           'joined_at' => 'datetime',
-       ];
+      protected $casts = [
+              'is_admin' => 'boolean',
+              'age' => 'integer',
+              'salary' => 'float',
+              'settings' => 'array',
+              'joined_at' => 'datetime',
+          ];
     }
        
      
