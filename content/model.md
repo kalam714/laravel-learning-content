@@ -18,11 +18,11 @@ Let's say in your user table you have a field that is user_type and that can hav
 Obviously, you don't want users to be able to update this value. In theory, if you used the above code, someone could inject into a form a new field for user_type and send 'admin' along with the other form data, and easily switch their account to an admin account... bad news.
 By adding:
 
-   $fillable = ['name', 'password', 'email'];
+    $fillable = ['name', 'password', 'email'];
 
 You are ensuring that only those values can be updated using mass assignment
 To be able to update the user_type value, you need to explicitly set it on the model and save it, like this:
 
-   $user->user_type = 'admin';
-   $user->save();
+      $user->user_type = 'admin';
+      $user->save();
 
