@@ -38,6 +38,9 @@ Let’s say you have a User model and you want to ensure that the name is always
         return ucfirst($value); // Capitalize the first letter
     }
     }
+
+    $user = User::find(1);
+    echo $user->name; // Outputs the 'name' attribute with the first letter capitalized
     
   ## Mutators : Mutators allow you to transform Eloquent attribute values when you set them. This is useful when you need to format or manipulate data before saving it to the database.
   
@@ -51,6 +54,10 @@ Consider a scenario where you want to hash a user's password before saving it to
         $this->attributes['password'] = bcrypt($value); // Hash the password
     }
     }
+
+    $user = new User();
+   $user->password = '123456'; // The password will be hashed before saving
+   $user->save();
 
 # 3. Appending Custom Attributes
   you can append custom attributes to the model's array form using the $appends property. This allows you to include additional computed or derived data alongside the actual database columns when serializing the model instance.
