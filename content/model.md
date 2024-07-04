@@ -103,16 +103,6 @@ Let's say you have a User model with sensitive attributes like password and reme
    
    Attribute casting in Laravel allows you to specify how Eloquent attributes should be converted to and from native PHP types when interacting with the database. This feature simplifies data handling by automatically transforming attribute values into appropriate data types.
 
-      class User extends Model
-   {
-       protected $casts = [
-           'is_admin' => 'boolean',
-           'age' => 'integer',
-           'salary' => 'float',
-           'settings' => 'array',
-           'joined_at' => 'datetime',
-       ];
-   }
      class User extends Model
     {
    protected $casts = [
