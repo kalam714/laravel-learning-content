@@ -1,3 +1,3 @@
 
-# Accessing Attributes
-   Accessing Attributes
+# 1. Basic Model Attributes
+   ## Accessing Attributes
