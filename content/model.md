@@ -285,4 +285,54 @@ Here’s how you can use a global scope in a controller to retrieve users:
           }
       }
 
+# Model Observers :
+Model observers in Laravel provide a way to listen for specific events that occur on Eloquent models, such as creating, updating, deleting, and saving events. They allow you to centralize and encapsulate logic that needs to be executed in response to these events, helping you keep your controllers and models clean and focused.
 
+Let's create a model observer for a User model to perform actions when certain events occur.
+
+First, generate an observer class using the Artisan command:
+
+      php artisan make:observer UserObserver --model=User
+
+Open the generated UserObserver class (app/Observers/UserObserver.php) and define the event listeners:
+
+      namespace App\Observers;
+      
+      use App\Models\User;
+      
+      class UserObserver
+      {
+          public function created(User $user)
+          {
+              // Logic to execute after user is created
+              \Log::info('User created: ' . $user->name);
+          }
+      
+          public function updated(User $user)
+          {
+              // Logic to execute after user is updated
+              \Log::info('User updated: ' . $user->name);
+          }
+      
+          public function deleting(User $user)
+          {
+              // Logic to execute before user is deleted
+              \Log::info('User deleting: ' . $user->name);
+          }
+      }
+
+Register the observer in the boot method of your App\Providers\AppServiceProvider or any service provider:
+
+      namespace App\Providers;
+      
+      use App\Models\User;
+      use App\Observers\UserObserver;
+      use Illuminate\Support\ServiceProvider;
+      
+      class AppServiceProvider extends ServiceProvider
+      {
+          public function boot()
+          {
+              User::observe(UserObserver::class);
+          }
+      }
