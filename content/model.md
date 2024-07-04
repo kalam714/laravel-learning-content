@@ -97,5 +97,22 @@ Let's say you have a User model with sensitive attributes like password and reme
   **Performance**: By reducing the size of JSON responses, you can improve the efficiency of data transmission between your application and clients.
    
    **Control**: You have fine-grained control over what data is exposed externally, ensuring compliance with security and privacy requirements.
+   
+
+   # 5. Attribute Casting:
+   
+   Attribute casting in Laravel allows you to specify how Eloquent attributes should be converted to and from native PHP types when interacting with the database. This feature simplifies data handling by automatically transforming attribute values into appropriate data types.
+
+      class User extends Model
+   {
+       protected $casts = [
+           'is_admin' => 'boolean',
+           'age' => 'integer',
+           'salary' => 'float',
+           'settings' => 'array',
+           'joined_at' => 'datetime',
+       ];
+   }
+
        
      
