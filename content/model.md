@@ -25,4 +25,19 @@ To be able to update the user_type value, you need to explicitly set it on the m
 
       $user->user_type = 'admin';
       $user->save();
+# 2. Accessors and Mutators
+  ## Accessors : Accessors allow you to transform Eloquent attribute values when you retrieve them. This is useful when you need to format or manipulate data before presenting it.
+  
+Let’s say you have a User model and you want to ensure that the name is always capitalized when retrieved. You can define an accessor to achieve this.
 
+      class User extends Model
+{
+    // Define an accessor for the 'name' attribute
+    public function getNameAttribute($value)
+    {
+        return ucfirst($value); // Capitalize the first letter
+    }
+}
+
+
+     
