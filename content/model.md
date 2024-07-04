@@ -114,4 +114,24 @@ Let's say you have a User model with sensitive attributes like password and reme
           ];
     }
        
-     
+# 6. Custom Attribute Casts:
+Attribute casting allows you to specify how attribute values should be transformed when interacting with the database. While Laravel provides built-in casts for common data types, you can also define custom attribute casts to handle specialized data transformations.
+
+Let's create a custom attribute cast that converts attribute values to uppercase when setting them and to lowercase when retrieving them.
+
+First, define a class that implements the CastsAttributes interface:
+
+      use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+
+      class AsUppercase implements CastsAttributes
+      {
+          public function get($model, string $key, $value, array $attributes)
+          {
+              return strtolower($value); // Convert value to lowercase when retrieving
+          }
+      
+          public function set($model, string $key, $value, array $attributes)
+          {
+              return strtoupper($value); // Convert value to uppercase when setting
+          }
+      }
