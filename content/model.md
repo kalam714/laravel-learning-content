@@ -92,9 +92,9 @@ Let's say you have a User model with sensitive attributes like password and reme
 
    **Attribute serialization offers several benefits:**
    
-  ** Security**: You can protect sensitive data, such as passwords or tokens, from being unintentionally exposed in JSON responses.
+  **Security**: You can protect sensitive data, such as passwords or tokens, from being unintentionally exposed in JSON responses.
    
-  ** Performance**: By reducing the size of JSON responses, you can improve the efficiency of data transmission between your application and clients.
+  **Performance**: By reducing the size of JSON responses, you can improve the efficiency of data transmission between your application and clients.
    
    **Control**: You have fine-grained control over what data is exposed externally, ensuring compliance with security and privacy requirements.
        
