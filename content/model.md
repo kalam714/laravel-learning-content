@@ -52,4 +52,19 @@ Consider a scenario where you want to hash a user's password before saving it to
     }
     }
 
+# 3. Appending Custom Attributes
+  you can append custom attributes to the model's array form using the $appends property. This allows you to include additional computed or derived data alongside the actual database columns when serializing the model instance.
+
+  Let's say you have a User model with separate first_name and last_name attributes, and you want to retrieve the user's full name as a single attribute.
+
+     class User extends Model
+    {
+     protected $appends = ['full_name'];
+
+    public function getFullNameAttribute()
+    {
+        return $this->first_name . ' ' . $this->last_name;
+    }
+    }
+       
      
