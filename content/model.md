@@ -30,14 +30,13 @@ To be able to update the user_type value, you need to explicitly set it on the m
   
 Let’s say you have a User model and you want to ensure that the name is always capitalized when retrieved. You can define an accessor to achieve this.
 
-      class User extends Model
-{
+     class User extends Model
+    {
     // Define an accessor for the 'name' attribute
     public function getNameAttribute($value)
     {
         return ucfirst($value); // Capitalize the first letter
     }
-}
-
+    }
 
      
