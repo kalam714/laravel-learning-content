@@ -145,6 +145,7 @@ Next, use the custom cast class in your Eloquent model:
           ];
       }
 **Explanation:**
+
      1. The AsUppercase class implements the CastsAttributes interface, which requires defining get and set methods.
      
      2. In the get method, the value retrieved from the database ($value) is transformed to lowercase before being returned.
