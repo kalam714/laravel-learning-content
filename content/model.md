@@ -66,5 +66,8 @@ Consider a scenario where you want to hash a user's password before saving it to
         return $this->first_name . ' ' . $this->last_name;
     }
     }
+
+    $user = User::find(1);
+    echo $user->full_name; // Outputs the full name of the user
        
      
