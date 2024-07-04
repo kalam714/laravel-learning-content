@@ -43,9 +43,9 @@ Let’s say you have a User model and you want to ensure that the name is always
   
 Consider a scenario where you want to hash a user's password before saving it to the database. You can define a mutator to handle this.
 
-    class User extends Model
-   {
-    // Define a mutator for the 'password' attribute
+     class User extends Model
+    {
+     // Define a mutator for the 'password' attribute
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = bcrypt($value); // Hash the password
