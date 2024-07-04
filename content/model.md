@@ -135,3 +135,20 @@ First, define a class that implements the CastsAttributes interface:
               return strtoupper($value); // Convert value to uppercase when setting
           }
       }
+      
+Next, use the custom cast class in your Eloquent model:
+
+      class User extends Model
+      {
+          protected $casts = [
+              'name' => AsUppercase::class,
+          ];
+      }
+**Explanation:**
+     1. The AsUppercase class implements the CastsAttributes interface, which requires defining get and set methods.
+     
+     2. In the get method, the value retrieved from the database ($value) is transformed to lowercase before being returned.
+     
+     3. In the set method, the value being set ($value) is transformed to uppercase before being assigned to the attribute.
+     
+     4. The $casts property in the User model specifies that the name attribute should be cast using the AsUppercase class.
