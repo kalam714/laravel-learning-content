@@ -153,3 +153,136 @@ Next, use the custom cast class in your Eloquent model:
      3. In the set method, the value being set ($value) is transformed to uppercase before being assigned to the attribute.
      
      4. The $casts property in the User model specifies that the name attribute should be cast using the AsUppercase class.
+     
+# 7. Using Accessors for Relationships:
+You can define accessors to retrieve attributes from related models. This allows you to access related model data as if it were a native attribute of the current model, enhancing the flexibility and readability of your code.
+
+Let's create an accessor in a Post model that retrieves the name of the post's author through a belongsTo relationship with the User model
+
+         class Post extends Model
+         {
+             public function author()
+             {
+                 return $this->belongsTo(User::class);
+             }
+         
+             public function getAuthorNameAttribute()
+             {
+                 return $this->author->name;
+             }
+         }
+
+# 8. Complex Accessors and Mutators :
+Complex accessors and mutators allow you to define attribute transformations that involve additional logic or calculations. This is particularly useful for computing derived attributes based on related data or performing aggregations.
+Let's create a total accessor in an Order model that computes the total price of the order based on its items.
+
+         class Order extends Model
+         {
+             protected $appends = ['total'];
+         
+             public function getTotalAttribute()
+             {
+                 return $this->items->sum(function ($item) {
+                     return $item->quantity * $item->price; // Calculate item subtotal
+                 });
+             }
+         }
+
+**Benefits of Complex Accessors and Mutators** 
+Complex accessors and mutators offer several advantages:
+
+**Data Aggregation**: You can aggregate data across related models or perform complex calculations to derive attribute values.
+
+**Encapsulation**: Logic for computing derived attributes is encapsulated within the model, promoting cleaner and more maintainable code.
+
+**Consistency**: By defining attribute transformations centrally, you ensure consistent data presentation throughout your application.
+
+# 9. Scope:
+Scopes in Laravel Eloquent models are predefined methods that help you encapsulate common query logic. They make it easier to reuse query constraints throughout your application without repeating code.
+
+Let's create a scope in a Task model to filter tasks based on their status, such as completed or incomplete.
+
+         use Illuminate\Database\Eloquent\Model;
+         use Illuminate\Database\Eloquent\Builder;
+         
+         class Task extends Model
+         {
+             public function scopeCompleted($query)
+             {
+                 return $query->where('status', 'completed');
+             }
+         
+             public function scopeIncomplete($query)
+             {
+                 return $query->where('status', 'incomplete');
+             }
+         }
+
+Here’s how you can use these scopes in a controller to retrieve tasks:
+
+         use App\Models\Task;
+         
+         class TaskController extends Controller
+         {
+             public function index()
+             {
+                 // Retrieve completed tasks
+                 $completedTasks = Task::completed()->get();
+         
+                 // Retrieve incomplete tasks
+                 $incompleteTasks = Task::incomplete()->get();
+         
+                 // Return tasks to view or process further
+                 return view('tasks.index', compact('completedTasks', 'incompleteTasks'));
+             }
+         }
+
+
+# 10. Global Scopes:
+
+Global scopes in Laravel Eloquent models allow you to apply constraints to all queries for a given model. They are automatically applied whenever a query is executed on that model, making them useful for enforcing conditions consistently without explicitly adding them to every query.
+
+Let's create a global scope in a User model to ensure that only active users are retrieved by default.
+
+         use Illuminate\Database\Eloquent\Model;
+         use Illuminate\Database\Eloquent\Builder;
+         
+         class User extends Model
+         {
+             protected static function boot()
+             {
+                 parent::boot();
+         
+                 static::addGlobalScope('active', function (Builder $builder) {
+                     $builder->where('active', true);
+                 });
+             }
+         }
+
+The boot method is overridden in the User model to add a global scope.
+
+You can disable a global scope temporarily using the withoutGlobalScope method:
+
+         $users = User::withoutGlobalScope('active')->get();
+
+Here’s how you can use a global scope in a controller to retrieve users:
+
+      
+      use App\Models\User;
+      
+      class UserController extends Controller
+      {
+          public function index()
+          {
+              // Retrieve all active users (global scope applied)
+              $users = User::all();
+      
+              // Retrieve all users (ignoring global scope)
+              $allUsers = User::withoutGlobalScope('active')->get();
+      
+              // Return users to view or process further
+              return view('users.index', compact('users', 'allUsers'));
+          }
+      }
+
+
