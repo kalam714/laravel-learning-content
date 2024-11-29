@@ -174,9 +174,276 @@ By default, Laravel wraps the resource response in a data key. You can disable o
 + 500: Internal server error. Ideally you're not going to be explicitly returning this, but if something unexpected breaks, this is what your user is going to receive.
 + 503: Service unavailable. Pretty self explanatory, but also another code that is not going to be returned explicitly by the application.
 
-# API Errors and Exceptions
-## Handling errors and exceptions effectively in Laravel APIs ensures that users receive clear, standardized, and informative responses. Laravel provides various tools and methods for handling API errors and exceptions
+# API Authentication and Authorization
 
-Laravel includes an App\Exceptions\Handler class where you can customize exception handling.
-Example: Customizing Exception Responses
-Edit the render method in Handler.php to handle API exceptions:
+## Authentication with Sanctum
+
+**token authentication : **
+
+        // routes/api.php
+        use Illuminate\Support\Facades\Route;
+        use App\Http\Controllers\AuthController;
+        
+        Route::post('/login', [AuthController::class, 'login']);
+        Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+            return $request->user();
+        });
+
+ **AuthController : **
+
+        // app/Http/Controllers/AuthController.php
+        namespace App\Http\Controllers;
+        
+        use Illuminate\Http\Request;
+        use Illuminate\Support\Facades\Auth;
+        
+        class AuthController extends Controller
+        {
+            public function login(Request $request)
+            {
+                $credentials = $request->only('email', 'password');
+                if (Auth::attempt($credentials)) {
+                    return response()->json([
+                        'token' => $request->user()->createToken('API Token')->plainTextToken,
+                        'user' => Auth::user(),
+                    ]);
+                }
+                return response()->json(['message' => 'Invalid credentials'], 401);
+            }
+        }
+
+
+## Authorization with Policies
+
+Laravel Policies allow fine-grained control over resource access.
+
+**Policy for Post**
+
+        php artisan make:policy PostPolicy --model=Post
+
+**PostPolicy.php**
+
+        // app/Policies/PostPolicy.php
+        namespace App\Policies;
+        
+        use App\Models\Post;
+        use App\Models\User;
+        
+        class PostPolicy
+        {
+            public function update(User $user, Post $post)
+            {
+                return $user->id === $post->user_id;
+            }
+        }
+
+**Register Policy**
+
+        // Register Policy in AuthServiceProvider
+        protected $policies = [
+            Post::class => PostPolicy::class,
+        ];
+
+**Usage**
+
+        // Usage in Controller
+        public function update(Request $request, Post $post)
+        {
+            $this->authorize('update', $post);
+        
+            $post->update($request->all());
+            return response()->json(['message' => 'Post updated!']);
+        }
+
+
+# Rate Limiting and Throttling
+## Laravel allows API rate limits using the RateLimiter facade.
+
+**Custom Rate Limiting**
+
+        // app/Providers/RouteServiceProvider.php
+        use Illuminate\Support\Facades\RateLimiter;
+        
+        protected function configureRateLimiting()
+        {
+            RateLimiter::for('api', function (Request $request) {
+                return $request->user()
+                    ? Limit::perMinute(100)->by($request->user()->id)
+                    : Limit::perMinute(10)->by($request->ip());
+            });
+        }
+
+# Middleware
+
+**Cusotm Middleware**
+
+        php artisan make:middleware CheckApiKey
+
+**Check Api key**
+
+        // app/Http/Middleware/CheckApiKey.php
+        public function handle($request, Closure $next)
+        {
+            if ($request->header('API_KEY') !== env('API_KEY')) {
+                return response()->json(['message' => 'Invalid API Key'], 401);
+            }
+            return $next($request);
+        }
+
+**Rate Limiting by User Role**
+
+        use Illuminate\Http\Request;
+        
+        public function configureRateLimiting()
+        {
+            RateLimiter::for('api', function (Request $request) {
+                return $request->user()->is_admin
+                    ? Limit::perMinute(100)
+                    : Limit::perMinute(20);
+            });
+        }
+
+# API Versioning
+
+**Route Prefix**
+
+        Route::prefix('v1')->group(function () {
+            Route::get('/posts', [PostController::class, 'index']);
+        });
+        
+        Route::prefix('v2')->group(function () {
+            Route::get('/posts', [PostController::class, 'newIndex']);
+        });
+
+**Versioning with Headers**
+
+        Route::middleware('checkVersion:v1')->group(function () {
+        Route::get('/posts', [PostController::class, 'index']);
+        });
+
+# Caching for Performance
+
+Tagged caching is helpful when you need to group related cached items for easier management.
+
+        use Illuminate\Support\Facades\Cache;
+        
+        public function getPosts()
+        {
+            $posts = Cache::tags(['posts', 'api'])->remember('all_posts', 60, function () {
+                return Post::all();
+            });
+        
+            return response()->json($posts);
+        }
+        
+        // Clear cache for specific tags
+        Cache::tags(['posts'])->flush();
+        
+
+# Scheduled Tasks with APIs
+
+**Dynamic API Scheduling**
+Call external APIs periodically and update database.
+
+
+        // app/Console/Kernel.php
+        protected function schedule(Schedule $schedule)
+        {
+            $schedule->call(function () {
+                $response = Http::get('https://api.example.com/updates');
+                $data = $response->json();
+        
+                // Save data to database
+                foreach ($data as $item) {
+                    Post::updateOrCreate(['id' => $item['id']], $item);
+                }
+            })->dailyAt('12:00');
+        }
+
+#  API Localization
+
+**Define Translations**
+
+        // resources/lang/en/messages.php
+        return [
+            'welcome' => 'Welcome!',
+        ];
+        
+        // resources/lang/bn/messages.php
+        return [
+            'welcome' => 'স্বাগতম',
+        ];
+
+**Use Translations in API**
+
+        use Illuminate\Support\Facades\App;
+        
+        public function index()
+        {
+            App::setLocale('bn'); // Dynamically set locale
+            return response()->json(['message' => __('messages.welcome')]);
+        }
+
+# API security
+
+**Validating Request Signatures**
+Ensure requests come from trusted sources by validating signatures.
+
+        public function handle($request, Closure $next)
+        {
+            $signature = $request->header('X-Signature');
+            $computedSignature = hash_hmac('sha256', $request->getContent(), env('API_SECRET'));
+        
+            if (!hash_equals($computedSignature, $signature)) {
+                return response()->json(['message' => 'Invalid signature'], 401);
+            }
+        
+            return $next($request);
+        }
+**CORS Configuration**
+Control which domains can access your API by setting up CORS in config/cors.php.
+
+        'paths' => ['api/*'],
+        'allowed_methods' => ['*'],
+        'allowed_origins' => ['https://example.com'],
+        'allowed_headers' => ['*'],
+        'exposed_headers' => [],
+        'max_age' => 0,
+        'supports_credentials' => false,
+
+**Protect Against SQL Injection**
+Use Eloquent or Query Builder to prevent SQL injection. Avoid raw SQL queries unless sanitized properly.
+
+        // Secure query
+        $users = User::where('email', $request->email)->get();
+        
+        // Vulnerable example (avoid)
+        DB::select("SELECT * FROM users WHERE email = '{$request->email}'");
+
+**Audit Logging**
+Log API requests and responses to monitor suspicious activities.
+
+        public function handle($request, Closure $next)
+        {
+            Log::info('API Request:', $request->all());
+            $response = $next($request);
+            Log::info('API Response:', $response->getContent());
+            return $response;
+        }
+
+**Content Security Policy (CSP)**
+Implement CSP headers to prevent XSS attacks:
+
+        header('Content-Security-Policy: default-src \'self\'');
+
+**Restrict API Routes by IP**
+
+        // app/Http/Middleware/CheckIP.php
+        public function handle($request, Closure $next)
+        {
+            $allowedIps = ['127.0.0.1', '192.168.1.1'];
+            if (!in_array($request->ip(), $allowedIps)) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+            return $next($request);
+        }
