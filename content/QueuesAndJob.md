@@ -218,6 +218,35 @@ Example Supervisor configuration:
 + Ensure that your jobs are small and focused. Avoid performing too many actions within a single job.
 + Use chunking to process large datasets efficiently without overwhelming the worker’s memory.
 
+** Real-life scenarios where queues and workers are commonly used:**
+
+**Sending Emails**
+
+**Scenario**:
+When a user registers or makes a purchase, your application sends them a confirmation email.
+
+**Why use a queue?**
+Sending an email involves external SMTP servers, which may delay the response. Using a queue, the email can be sent in the background while the user gets immediate feedback.
+
+        Mail::to($user->email)->queue(new WelcomeEmail($user));
+
+**Processing File Uploads**
+
+**Scenario**:
+
+A user uploads a large file (e.g., a video or document) that needs to be processed (e.g., resizing images, converting formats, or scanning for malware).
+
+**Why use a queue?**
+Processing files can be resource-intensive and slow. Using a queue ensures the user doesn't wait for the task to finish.
+
+**Example:**
+
++ Video transcoding for streaming platforms.
++ Generating thumbnails for uploaded images.
+
+
+
+
 **Summary:**
 
 + Basic Queue Usage: Simple job dispatch and queue workers.
