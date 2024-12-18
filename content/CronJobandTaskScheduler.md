@@ -89,8 +89,170 @@ You can schedule HTTP requests using the ping() method.
 
 This would ping the given URL every 30 minutes, useful for uptime monitoring.
 
+# Advanced Features
+
+**Custom Time Zones:**
+
+You can specify a custom time zone for tasks that need to run in specific regions.
+
+        $schedule->command('emails:send')->dailyAt('07:00')->timezone('Asia/Dhaka');
+This ensures the task runs at 7 AM in the Dhaka timezone.
+
+**Conditional Execution:**
+
+You can run tasks based on certain conditions using the when method.
+
+        $schedule->command('cleanup:files')->daily()->when(function () {
+            return now()->isMonday(); // Only run on Mondays
+        });
 
 
+**Notification on Task Completion:**
+
+You can specify actions to take on task success or failure. For example, you can send a notification or log a message when a task is successful.
+
+        $schedule->command('db:backup')->daily()->onSuccess(function () {
+            \Log::info('Backup completed successfully');
+        });
+
+**Without Overlapping:**
+
+You can ensure that tasks don't overlap by adding withoutOverlapping().
+
+        $schedule->command('emails:send')->everyMinute()->withoutOverlapping();
+
+This prevents the same task from running concurrently if it takes longer than expected to complete.
+
+**Maintenance Mode Exclusion:**
+
+Sometimes, tasks should still run during maintenance mode. You can ensure this with evenInMaintenanceMode().
+
+        $schedule->command('report:generate')->daily()->evenInMaintenanceMode();
+
+
+
+# Monitoring Scheduled Tasks
+
+**Task Output Logging:**
+
+You can send the output of the task to a log file for debugging or tracking.
+
+        $schedule->command('emails:send')
+                 ->daily()
+                 ->sendOutputTo('/path/to/output.log');
+
+The **sendOutputTo()** method in the Laravel Scheduler is used to capture the output (both standard output and errors) of a scheduled command and store it in a specified log file. This is especially useful for debugging or keeping a record of task execution details.
+
+If the command executes successfully:
+
+        Sending emails started...
+        Successfully sent 50 emails!
+        Task completed at: 2024-12-18 10:00:00
+
+If the command fails:
+
+        Sending emails started...
+        Error: Unable to connect to SMTP server!
+        Task failed at: 2024-12-18 10:00:00
+
+**Error Tracking**
+
+If you want to log errors separately, you can combine onFailure() with sendOutputTo():
+
+        $schedule->command('emails:send')
+                 ->daily()
+                 ->sendOutputTo(storage_path('logs/emails.log'))
+                 ->onFailure(function () {
+                     \Log::error('Email command failed!');
+                 });
+
+# Custom Artisan Commands for Scheduling
+
+Artisan commands allow you to define and execute specific tasks through the command line. These commands can be scheduled using the Laravel Scheduler to automate processes like sending emails, generating reports, or cleaning up files.
+
+**Create a Custom Artisan Command**
+
+To create a custom command, use the Artisan make:command generator:
+
+        php artisan make:command SendEmails
+
+This creates a new command file in the app/Console/Commands directory.
+
+**Define the Command Logic**
+
+Open the app/Console/Commands/SendEmails.php file and customize the command.
+
+        <?php
+        
+        namespace App\Console\Commands;
+        
+        use Illuminate\Console\Command;
+        
+        class SendEmails extends Command
+        {
+            /**
+             * The name and signature of the console command.
+             *
+             * @var string
+             */
+            protected $signature = 'emails:send';
+        
+            /**
+             * The console command description.
+             *
+             * @var string
+             */
+            protected $description = 'Send reminder emails to users';
+        
+            /**
+             * Execute the console command.
+             *
+             * @return int
+             */
+            public function handle()
+            {
+                // Task logic here (e.g., sending emails)
+                \Log::info('Reminder emails sent successfully!');
+                
+                // Example of calling an email service
+                // Mail::to(User::all())->send(new ReminderEmail());
+        
+                return Command::SUCCESS;
+            }
+        }
+
+
+**$signature**: This defines how you will run the command. For example, emails:send.
+**$description**: This is a short description of what the command does.
+**handle()**: This is where the logic for the command resides. In the example, we log a message to indicate the task was executed.
+
+**Register the Command (Optional)**
+
+Commands are automatically registered if they are in the app/Console/Commands directory. However, you can manually register them in the commands array in app/Console/Kernel.php:
+
+        protected $commands = [
+            \App\Console\Commands\SendEmails::class,
+        ];
+
+**Schedule the Command**
+
+To automate the execution of the command, add it to the schedule() method in app/Console/Kernel.php:
+
+        protected function schedule(Schedule $schedule)
+        {
+            $schedule->command('emails:send')->weekly();
+        }
+
+**emails:send**: Refers to the signature defined in the command.
+**->weekly()**: Specifies that the command should run once a week. You can use other scheduling frequencies such as daily(), hourly(), or monthly().
+
+**Test the Command**
+
+To test if your command works as expected, run it manually:
+
+        php artisan emails:send
+
+Check your logs (e.g., storage/logs/laravel.log) for the success message: Reminder emails sent successfully!
 
 
 
